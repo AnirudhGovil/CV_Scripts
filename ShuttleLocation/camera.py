@@ -45,7 +45,7 @@ class Camera:
         utils.display_image_with_points(image, imgpoints2[:,0,:])
 
 
-    def undistort(self, imgpath, points):
+    def undistort(self, imgpath, image_points, world_points):
         """
         Undistort the image using the camera matrix and distortion coefficients
         :param imgpath: Path to the image to be undistorted
@@ -59,29 +59,17 @@ class Camera:
         undistorted_img = cv2.undistort(img, self.camera_matrix, self.distortion_coefficients, None, self.new_camera_matrix)
         undistorted_img = cv2.cvtColor(undistorted_img, cv2.COLOR_BGR2RGB)
         plt.savefig(f'{imgpath[:-4]}_undistorted.png')
-        undistorted_img_points = cv2.undistortPoints(points, self.camera_matrix, self.distortion_coefficients, None, self.new_camera_matrix)
+        undistorted_img_points = cv2.undistortPoints(image_points, self.camera_matrix, self.distortion_coefficients, None, self.new_camera_matrix)
         np.savetxt(f'{imgpath[:-4]}_undistorted_image_points.txt', undistorted_img_points[:,0,:])
-        # Save the camera object as a pickle file
-        pickle.dump(self, open(f'{imgpath[:-4]}_camera_object.pkl', 'wb'))
-        utils.display_image_with_points(undistorted_img, undistorted_img_points[:,0,:])
-
-    def set_rotation_and_translation_vectors(self, world_points, image_points):
-        """
-        Returns the rotation and translation vectors for the given world and image points.
-        :param world_points: The world points.
-        :type world_points: numpy array of shape (N, 3)
-        :param image_points: The image points.
-        :type image_points: numpy array of shape (N, 2)
-        :param camera_matrix: The camera matrix.
-        :type camera_matrix: numpy array of shape (3, 3)
-        :return: None
-        """
-        _, rvec, tvec = cv2.solvePnP(world_points, image_points, self.new_camera_matrix, None)
+        _, rvec, tvec = cv2.solvePnP(world_points, undistorted_img_points, self.new_camera_matrix, None)
         # Since rvec is a rotation vector, we need to convert it to a rotation matrix.
         self.rotation_matrix, _ = cv2.Rodrigues(rvec)
         self.translation_vectors = tvec
-   
-    
+        # Save the camera object as a pickle file
+        pickle.dump(self, open(f'{imgpath[:-4]}_camera_object.pkl', 'wb'))
+        utils.display_image_with_points(undistorted_img, undistorted_img_points[:,0,:])
+        return undistorted_img_points[:,0,:]
+
 
 
         
