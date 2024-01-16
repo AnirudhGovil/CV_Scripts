@@ -35,7 +35,7 @@ def interactive_clicking_and_saving(image, image_points):
     def click_event(event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN:
             image_points.append([x, y])
-            cv2.circle(image, (x, y), 10, (0, 0, 255), -1)
+            cv2.circle(image, (x, y), 5, (0, 0, 255), -1)
             cv2.imshow("image", image)
     
     # display the image
